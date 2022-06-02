@@ -15,6 +15,9 @@ mongoose.connect("mongodb+srv://prakash_93:nzdQ9yMSM6uWLxcM@cluster0.fg71d.mongo
 });
 
 app.use(express.static(path.join(__dirname, 'ui')));
+app.get('/profile', (req, res)=>{
+    res.sendFile(path.join(__dirname, './ui/profile/profile.html'));
+})
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

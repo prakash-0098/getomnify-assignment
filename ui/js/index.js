@@ -1,3 +1,14 @@
+/**focus on input box */
+
+$(document).ready(() => {
+    $("#signup_modal").on('shown.bs.modal', () => {
+        $(".f-name").focus();
+    });
+    $("#login_modal").on('shown.bs.modal', () => {
+        $(".l-email").focus();
+    });
+});
+
 $(document).ready(() => {
     $(".signup_form").submit((e) => {
         e.preventDefault();
@@ -66,7 +77,7 @@ $(document).ready(() => {
                 if (response.status) {
                     document.cookie = `auth=${response.data}; expires=Thu, 18 Dec 2022 12:00:00 UTC; path=/`;
                     window.localStorage.setItem('auth', 'ok');
-                    window.location = "profile/profile.html";
+                    window.location = "profile";
                 }
             },
             error: (response) => {

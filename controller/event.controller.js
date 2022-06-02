@@ -1,6 +1,5 @@
 const eventSchema = require('../model/event.model');
 const scheduleSchema = require('../model/schedule.model');
-const jwt = require('jsonwebtoken');
 const moment = require('moment');
 
 const createEvent = async (req, res) => {
@@ -20,12 +19,11 @@ const createEvent = async (req, res) => {
         schedule.push(tmp.format('YYYY-MM-DD'));
     }
 
-    const decodeToken = jwt.verify(req.cookies.auth, '1234');
-    data.email = decodeToken.au;
+    data.email = req.email;
 
     const scheduleObj = {
         schedules: schedule,
-        event_name: data.name,
+        event: data.event,
         start_time: data.start_time,
         end_time: data.end_time,
         email: data.email
@@ -40,6 +38,12 @@ const createEvent = async (req, res) => {
         });
     }
     catch (error) {
+        if (error.code == 11000) {
+            return res.status(400).send({
+                status: false,
+                message: 'Duplicate event'
+            });
+        }
         return res.status(500).send({
             status: false,
             message: error.message
@@ -49,10 +53,9 @@ const createEvent = async (req, res) => {
 
 const getSchedules = async (req, res) => {
     const token = req.query.token;
-    const decodeToken = jwt.verify(req.cookies.auth, '1234');
 
     const schedulesRes = await scheduleSchema.find({
-        email: decodeToken.au
+        email: req.email
     });
 
     if (!schedulesRes) {
@@ -68,7 +71,27 @@ const getSchedules = async (req, res) => {
     });
 }
 
+const deleteEvent = async (req, res) => {
+    const data = req.body;
+    try {
+        const deleteEvent = await eventSchema.deleteOne(data);
+        const deleteSchedule = await scheduleSchema.deleteOne(data);
+        if (deleteEvent.deletedCount) {
+            return res.status(200).send({
+                status: true,
+                message: 'Delete success'
+            });
+        }
+    } catch (error) {
+        return res.status(500).send({
+            status: false,
+            message: error.message
+        });
+    }
+}
+
 module.exports = {
     createEvent,
-    getSchedules
+    getSchedules,
+    deleteEvent
 }

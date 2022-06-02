@@ -46,7 +46,9 @@ const login = async (req, res) => {
         }
 
         const token = jwt.sign({
-            'au': email
+            'au': email,
+            'fullname': emailRes.firstname + " " + emailRes.lastname,
+            'abbr': emailRes.firstname[0]
         }, '1234');
 
         return res.status(200).send({

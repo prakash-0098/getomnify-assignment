@@ -50,23 +50,17 @@
                             $("#album-col").append(`
                 <div class="col">
                     <div class="card shadow-sm">
-                        <svg class="bd-placeholder-img card-img-top" width="100%" height="225"
-                            xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Thumbnail"
-                            preserveAspectRatio="xMidYMid slice" focusable="false">
-                            <title>Placeholder</title>
-                            <rect width="100%" height="100%" fill="#55595c" /><text x="50%" y="50%" fill="#eceeef"
-                                dy=".3em">${data.event_name}</text>
-                        </svg>
-
+                        <div class="py-5 bg-dark">
+                            <h2 class='display-6 text-center text-capitalize text-light'>${data.event}</h2>
+                        </div>
                         <div class="card-body">
                             <p class="card-text">This is a wider card with supporting text below as a natural lead-in to
                                 additional content. This content is a little bit longer.</p>
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="">
-                                    <button type="button" class="btn btn-primary show-event" data-items="${data.schedules}" data-event-name="${data.event_name}" data-event-start="${data.start_time}" data-event-end="${data.end_time}"><i class="uil uil-eye"></i> View an Event</button>
-                                    <button type="button" class="btn btn-danger delete-event" data-auth="${data.email}"><i class="uil uil-trash"></i> Delete</button>
+                                    <button type="button" class="btn btn-primary show-event" data-items="${data.schedules}" data-event-name="${data.event}" data-event-start="${data.start_time}" data-event-end="${data.end_time}"><i class="uil uil-eye"></i> View an Event</button>
                                 </div>
-                                <small class="text-muted">9 mins</small>
+                                <button type="button" class="btn btn-danger delete-event d-flex justify-content-center align-items-center" data-auth="${data.email}" data-event="${data.event}"><i class="uil uil-trash"></i></button>
                             </div>
                         </div>
                     </div>
@@ -86,6 +80,7 @@
                                     constraint: 'availableForMeeting'
                                 }
                             });
+
 
                             console.log(events)
 
@@ -108,6 +103,29 @@
 
                             calendar.render();
                         });
+
+                        // delete an event
+                        $(".delete-event").click((e) => {
+                            let confirm = window.confirm("Are you sure ?");
+                            if (confirm) {
+                                $.ajax({
+                                    type: "DELETE",
+                                    url: "http://localhost:8000/deleteEvent",
+                                    data: {
+                                        email: e.target.getAttribute('data-auth'),
+                                        event: e.target.getAttribute('data-event')
+                                    },
+                                    beforeSend: () => {
+                                        $(e.target).html('<div class="spinner-border spinner-border-sm"></div>');
+                                    },
+                                    success: (response) => {
+                                        if (response.status) {
+                                            window.location.reload();
+                                        };
+                                    }
+                                });
+                            }
+                        });
                     }
                     else {
                         $("#profile_page").removeClass('d-none');
@@ -127,8 +145,9 @@
             <h2 class="navbar-brand brand p-0 m-0">Getomnify</h2>
             <div class="d-flex">
                 <button class="btn btn-primary text-capitalize me-3 px-3 rounded-1" type="button" data-bs-toggle="modal"
-                    data-bs-target="#schdule_modal">Create Event</button>
-                <div class="user-pic-box text-capitalize d-flex justify-content-center align-items-center">p</div>
+                    data-bs-target="#schedule_modal">Create Event</button>
+                <div class="user-pic-box text-capitalize d-flex justify-content-center align-items-center"
+                    data-bs-toggle="modal" data-bs-target="#profile_modal"></div>
             </div>
         </div>
     </nav>
@@ -139,7 +158,7 @@
             </div>
         </div>
     </div>
-    <div class="container-fluid page" id="profile_page">
+    <div class="container-fluid d-none page" id="profile_page">
         <div class="row h-100">
             <div class="col-md-6 d-flex justify-content-center align-items-center">
                 <div>
@@ -148,7 +167,7 @@
                     <p class="text-uppercase p-0 m-0">Schedule your event now !</p>
                     <br />
                     <button class="btn btn-primary text-capitalize me-3 px-3 rounded-1" type="button"
-                        data-bs-toggle="modal" data-bs-target="#schdule_modal">Create An
+                        data-bs-toggle="modal" data-bs-target="#schedule_modal">Create An
                         Event <i class="uil uil-navigator"></i></button>
                 </div>
             </div>
@@ -159,7 +178,7 @@
     </div>
 
     <!-- Signup Modal -->
-    <div class="modal fade" id="schdule_modal">
+    <div class="modal fade" id="schedule_modal">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-body p-5">
@@ -173,7 +192,8 @@
                             <form class="event_form" autocomplete="off" spellcheck="false">
                                 <div class="form-group mb-4">
                                     <label>Name</label>
-                                    <input type="text" class="form-control" name="name" required />
+                                    <input type="text" class="form-control event-name" name="event" required />
+                                    <small class="event-name-error text-danger"></small>
                                 </div>
                                 <div class="form-group mb-4">
                                     <label>Description</label>
@@ -207,6 +227,21 @@
                             </form>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User profile Modal -->
+    <div class="modal fade" id="profile_modal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body p-5 d-flex flex-column align-items-center">
+                    <div class="profile-pic-box text-capitalize d-flex justify-content-center align-items-center"></div>
+                    <br />
+                    <h4 class="profile-fullname text-capitalize">Create an Event</h4>
+                    <p class="profile-email"></p>
+                    <button class="btn btn-primary px-3 logout-btn"><i class="uil uil-sign-out-alt"></i> Logout</button>
                 </div>
             </div>
         </div>
